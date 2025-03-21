@@ -10,7 +10,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 import click
 # Updated import for ForceCalculator
-from logic.forces import ForceCalculator
+from Logic.forces import ForceCalculator
 # Existing imports for Octree, Body, and insert_body remain
 from Logic.BarnesHut import OctreeNode, insert_body, Body
 from Visualization import print_results
@@ -90,16 +90,7 @@ def initialize_bodies(n, R0, m):
     return masses, positions, velocities
 
 
-@click.command()
-@click.option('--n', default= 10, help ='An integer value for the number of bodies in the simulation. Default is 20 bodies')
-@click.option('--R0', default= 3.0856776e10 )
-@click.option('--timespan', default= 1e6, help = 'A integer value (in seconds) to run the simulation for. Default is 1e6 seconds')
-@click.option('--theta', default= 0.5, help = 'Opening angle parameter for the Barnes-Hut algorithm. Default: 0.5')
-@click.option('--bound-condition', default= 10, help = 'Limit at which stars are no longer a part of the cluster. Default: 10')
-
-
-
-def main(n, R0, timespan, theta, bound_condition):
+def run_simulation(n, R0, timespan, theta, bound_condition):
     '''
     Main function for running the n-body simulation
      Parameters:
@@ -116,7 +107,6 @@ def main(n, R0, timespan, theta, bound_condition):
 
     # Initial state vector
     y0 = np.concatenate([positions.flatten(), velocities.flatten()])
-
 
     # Adjusting timesteps with number of bodies for better resolution
     if n <= 40:
@@ -135,6 +125,3 @@ def main(n, R0, timespan, theta, bound_condition):
     solution = solve_ivp(equations_of_motion, t_span, y0, t_eval=t_eval, args=(masses, theta), method='RK45')
 
     print_results(n, solution, m, bound_condition)
-
-if __name__ == '__main__':
-     main()
