@@ -1,7 +1,5 @@
 '''
 Darian Lagman
-7917268
-ASTR 3180 Final Project
 
 This project will simulate the movements of n bodies with realtion to each other
 utilizaing the Barnes-Hut algorithm to calculate the forces applied on each body.
@@ -15,7 +13,7 @@ import click
 
 
 # Implementation imports
-from BarnesHut import OctreeNode, insert_body, Body
+from Logic.BarnesHut import OctreeNode, insert_body, Body
 
 from Visualization import print_results
 

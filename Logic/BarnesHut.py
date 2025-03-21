@@ -1,7 +1,5 @@
 import numpy as np
 
-
-
 class Body:
     '''
     Represents a celestial body in the simulation.
