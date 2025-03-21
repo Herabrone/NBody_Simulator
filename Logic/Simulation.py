@@ -99,7 +99,7 @@ def initialize_bodies(n, R0, m):
 
 
 
-def main(n, r0, timespan, theta, bound_condition):
+def main(n, R0, timespan, theta, bound_condition):
     '''
     Main function for running the n-body simulation
      Parameters:
@@ -112,7 +112,7 @@ def main(n, r0, timespan, theta, bound_condition):
     m = 1.9891e30  # Mass of the bodies (kg)
     
 
-    masses, positions, velocities = initialize_bodies(n, r0, m)
+    masses, positions, velocities = initialize_bodies(n, R0, m)
 
     # Initial state vector
     y0 = np.concatenate([positions.flatten(), velocities.flatten()])
