@@ -284,43 +284,45 @@ def get_centre_mass(solution, m):
 
 def plot_radial_density_over_time(solution, n, m, num_shells=5, num_snapshots=25):
     """
-    Calculate and plot radial density profiles at a fixed number of time snapshots.
-      - num_shells: number of spherical shells
-      - num_snapshots: total snapshots to plot (25)
+    Plot radial density profiles using 25 snapshots.
+    The snapshot at t=0 is drawn in pure black, with subsequent snapshots in progressively lighter shades.
     """
     positions = solution.y[:3*n].reshape((n, 3, -1))
     times = solution.t
 
-    # Get 25 equally spaced indices across the simulation times
-    snapshot_indices = np.linspace(0, len(times)-1, num_snapshots, dtype=int)
+    # Choose 25 equally spaced snapshot indices
+    snapshot_indices = np.linspace(0, len(times) - 1, num_snapshots, dtype=int)
 
-    # Determine the global maximum radius among the chosen snapshots for consistent shell edges
+    # Determine the global maximum radius among the chosen snapshots to set consistent shell edges
     max_radius_overall = 0.0
     for idx in snapshot_indices:
         radii = np.linalg.norm(positions[:, :, idx], axis=1)
         max_radius_overall = max(max_radius_overall, np.max(radii))
-
-    # Define shell edges and centers using the global max radius
+    
+    # Define shell edges, centers, and volumes
     shell_edges = np.linspace(0, max_radius_overall, num_shells + 1)
     shell_centers = 0.5 * (shell_edges[:-1] + shell_edges[1:])
     shell_volumes = (4.0/3.0) * np.pi * (shell_edges[1:]**3 - shell_edges[:-1]**3)
 
-    # Create a figure for the radial density
-    fig2 = plt.figure()
-    ax2 = fig2.add_subplot(111)
-    ax2.set_title('Radial Density Profile Over Time')
+    # Create the plot
+    fig, ax = plt.subplots()
+    ax.set_title("Radial Density Profile Over Time")
+    ax.set_xlabel("Radius (m)")
+    ax.set_ylabel("Density (kg/m^3)")
 
-    # Plot density for each snapshot
-    for idx in snapshot_indices:
+    # Plot each snapshot with a grayscale color: start with black and progress to lighter gray
+    for j, idx in enumerate(snapshot_indices):
         radii = np.linalg.norm(positions[:, :, idx], axis=1)
         shell_masses = np.zeros(num_shells)
         for i, (r_min, r_max) in enumerate(zip(shell_edges[:-1], shell_edges[1:])):
             in_shell = (radii >= r_min) & (radii < r_max)
             shell_masses[i] = np.sum(in_shell) * m
         densities = shell_masses / shell_volumes
-        ax2.plot(shell_centers, densities, label=f't={times[idx]:.2e}s')
 
-    ax2.set_xlabel('Radius (m)')
-    ax2.set_ylabel('Density (kg/m^3)')
-    ax2.legend()
+        # Compute grayscale color: 0.0 is black, 1.0 is white.
+        # We scale the index so that the first snapshot is 0.0 (black) and the last is closer to white.
+        gray_value = j / (num_snapshots - 1)  # range from 0 to 1
+        color = (gray_value, gray_value, gray_value)
+        ax.plot(shell_centers, densities, color=color, linewidth=2)
+
     plt.show()
