@@ -25,8 +25,9 @@ def run_gui_simulation():
         bound_condition = int(entry_bound_condition.get())
 
         # Run the simulation
-        run_simulation(n, R0, timespan, theta, bound_condition)
         messagebox.showinfo("Success", "Simulation has started!")
+        run_simulation(n, R0, timespan, theta, bound_condition)
+        
     except ValueError as e:
         messagebox.showerror("Error", "Please enter valid values.")
 

@@ -29,32 +29,35 @@ def print_results(n, solution, m, cluster_size):
     ax1.set_zlabel('Distance (m)')
     ax1.set_title(f'Trajectories of {n} Bodies')
 
-    # Calculate radial density profiles
-    positions = solution.y[:3*n].reshape((n, 3, -1))
-    final_positions = positions[:, :, -1]
+    # # Calculate radial density profiles
+    # positions = solution.y[:3*n].reshape((n, 3, -1))
+    # final_positions = positions[:, :, -1]
 
-    radii = np.linalg.norm(final_positions, axis=1)
-    max_radius = np.max(radii)
-    num_shells = 20
-    shell_edges = np.linspace(0, max_radius, num_shells + 1)
-    shell_volumes = (4/3) * np.pi * (shell_edges[1:]**3 - shell_edges[:-1]**3)
+    # radii = np.linalg.norm(final_positions, axis=1)
+    # max_radius = np.max(radii)
+    # num_shells = 20
+    # shell_edges = np.linspace(0, max_radius, num_shells + 1)
+    # shell_volumes = (4/3) * np.pi * (shell_edges[1:]**3 - shell_edges[:-1]**3)
 
-    shell_masses = np.zeros(num_shells)
+    # shell_masses = np.zeros(num_shells)
 
-    for i, (r_min, r_max) in enumerate(zip(shell_edges[:-1], shell_edges[1:])):
-        in_shell = (radii >= r_min) & (radii < r_max)
-        shell_masses[i] = np.sum(in_shell) * m
+    # for i, (r_min, r_max) in enumerate(zip(shell_edges[:-1], shell_edges[1:])):
+    #     in_shell = (radii >= r_min) & (radii < r_max)
+    #     shell_masses[i] = np.sum(in_shell) * m
 
-    densities = shell_masses[1:] / shell_volumes[1:]  # Exclude the smallest shell
+    # densities = shell_masses[1:] / shell_volumes[1:]  # Exclude the smallest shell
 
-    # Plot radial density profile
-    fig2 = plt.figure()
-    ax2 = fig2.add_subplot(111)
-    shell_centers = (shell_edges[1:-1] + shell_edges[2:]) / 2  # Exclude the smallest shell
-    ax2.plot(shell_centers, densities, marker='o')
-    ax2.set_xlabel('Radius (m)')
-    ax2.set_ylabel('Density (Star/m^3)')
-    ax2.set_title('Radial Density Profile')
+    # # Plot radial density profile
+    # fig2 = plt.figure()
+    # ax2 = fig2.add_subplot(111)
+    # shell_centers = (shell_edges[1:-1] + shell_edges[2:]) / 2  # Exclude the smallest shell
+    # ax2.plot(shell_centers, densities, marker='o')
+    # ax2.set_xlabel('Radius (m)')
+    # ax2.set_ylabel('Density (Star/m^3)')
+    # ax2.set_title('Radial Density Profile')
+
+    # --- 2) Time‐Evolving Radial Density Profile ---
+    plot_radial_density_over_time(solution, 5, m)
 
     # Calculate KE and U
     R = cluster_size * 3.0856776e10
@@ -277,3 +280,47 @@ def get_centre_mass(solution, m):
     z_com = np.sum(m * solution.y[2::3, 0]) / np.sum(m)  # z-component of COM
     com = np.array([x_com, y_com, z_com])  # Center of mass at t=0
     return com
+
+
+def plot_radial_density_over_time(solution, n, m, num_shells=5, num_snapshots=25):
+    """
+    Calculate and plot radial density profiles at a fixed number of time snapshots.
+      - num_shells: number of spherical shells
+      - num_snapshots: total snapshots to plot (25)
+    """
+    positions = solution.y[:3*n].reshape((n, 3, -1))
+    times = solution.t
+
+    # Get 25 equally spaced indices across the simulation times
+    snapshot_indices = np.linspace(0, len(times)-1, num_snapshots, dtype=int)
+
+    # Determine the global maximum radius among the chosen snapshots for consistent shell edges
+    max_radius_overall = 0.0
+    for idx in snapshot_indices:
+        radii = np.linalg.norm(positions[:, :, idx], axis=1)
+        max_radius_overall = max(max_radius_overall, np.max(radii))
+
+    # Define shell edges and centers using the global max radius
+    shell_edges = np.linspace(0, max_radius_overall, num_shells + 1)
+    shell_centers = 0.5 * (shell_edges[:-1] + shell_edges[1:])
+    shell_volumes = (4.0/3.0) * np.pi * (shell_edges[1:]**3 - shell_edges[:-1]**3)
+
+    # Create a figure for the radial density
+    fig2 = plt.figure()
+    ax2 = fig2.add_subplot(111)
+    ax2.set_title('Radial Density Profile Over Time')
+
+    # Plot density for each snapshot
+    for idx in snapshot_indices:
+        radii = np.linalg.norm(positions[:, :, idx], axis=1)
+        shell_masses = np.zeros(num_shells)
+        for i, (r_min, r_max) in enumerate(zip(shell_edges[:-1], shell_edges[1:])):
+            in_shell = (radii >= r_min) & (radii < r_max)
+            shell_masses[i] = np.sum(in_shell) * m
+        densities = shell_masses / shell_volumes
+        ax2.plot(shell_centers, densities, label=f't={times[idx]:.2e}s')
+
+    ax2.set_xlabel('Radius (m)')
+    ax2.set_ylabel('Density (kg/m^3)')
+    ax2.legend()
+    plt.show()
