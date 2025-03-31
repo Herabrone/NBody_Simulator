@@ -29,34 +29,7 @@ def print_results(n, solution, m, cluster_size):
     ax1.set_zlabel('Distance (m)')
     ax1.set_title(f'Trajectories of {n} Bodies')
 
-    # # Calculate radial density profiles
-    # positions = solution.y[:3*n].reshape((n, 3, -1))
-    # final_positions = positions[:, :, -1]
-
-    # radii = np.linalg.norm(final_positions, axis=1)
-    # max_radius = np.max(radii)
-    # num_shells = 20
-    # shell_edges = np.linspace(0, max_radius, num_shells + 1)
-    # shell_volumes = (4/3) * np.pi * (shell_edges[1:]**3 - shell_edges[:-1]**3)
-
-    # shell_masses = np.zeros(num_shells)
-
-    # for i, (r_min, r_max) in enumerate(zip(shell_edges[:-1], shell_edges[1:])):
-    #     in_shell = (radii >= r_min) & (radii < r_max)
-    #     shell_masses[i] = np.sum(in_shell) * m
-
-    # densities = shell_masses[1:] / shell_volumes[1:]  # Exclude the smallest shell
-
-    # # Plot radial density profile
-    # fig2 = plt.figure()
-    # ax2 = fig2.add_subplot(111)
-    # shell_centers = (shell_edges[1:-1] + shell_edges[2:]) / 2  # Exclude the smallest shell
-    # ax2.plot(shell_centers, densities, marker='o')
-    # ax2.set_xlabel('Radius (m)')
-    # ax2.set_ylabel('Density (Star/m^3)')
-    # ax2.set_title('Radial Density Profile')
-
-    # --- 2) Time‐Evolving Radial Density Profile ---
+    # Time‐Evolving Radial Density Profile ---
     plot_radial_density_over_time(solution, 5, m)
 
     # Calculate KE and U
@@ -98,7 +71,6 @@ def print_results(n, solution, m, cluster_size):
 
     # Show the plots
     plt.show()
-
 
 def compute_KE(solution, n, m, R):
     '''
@@ -217,8 +189,6 @@ def compute_U(solution, n, m, G, R, epsilon=1e2):
 
     return U  # Return the total potential energy
 
-
-
 def calculate_num_stars_within_R(solution, n, R, m):
     ''' 
     Compute the number of stars within some radius.
@@ -281,11 +251,13 @@ def get_centre_mass(solution, m):
     com = np.array([x_com, y_com, z_com])  # Center of mass at t=0
     return com
 
-
 def plot_radial_density_over_time(solution, n, m, num_shells=5, num_snapshots=25):
+
+
+
     """
     Plot radial density profiles using 25 snapshots.
-    The snapshot at t=0 is drawn in pure black, with subsequent snapshots in progressively lighter shades.
+    The snapshot at t=0 is drawn in red, and the colors interpolate smoothly to green for the final snapshot
     """
     positions = solution.y[:3*n].reshape((n, 3, -1))
     times = solution.t
@@ -293,7 +265,7 @@ def plot_radial_density_over_time(solution, n, m, num_shells=5, num_snapshots=25
     # Choose 25 equally spaced snapshot indices
     snapshot_indices = np.linspace(0, len(times) - 1, num_snapshots, dtype=int)
 
-    # Determine the global maximum radius among the chosen snapshots to set consistent shell edges
+    # Determine the global maximum radius among the chosen snapshots for consistent shell edges
     max_radius_overall = 0.0
     for idx in snapshot_indices:
         radii = np.linalg.norm(positions[:, :, idx], axis=1)
@@ -310,7 +282,7 @@ def plot_radial_density_over_time(solution, n, m, num_shells=5, num_snapshots=25
     ax.set_xlabel("Radius (m)")
     ax.set_ylabel("Density (kg/m^3)")
 
-    # Plot each snapshot with a grayscale color: start with black and progress to lighter gray
+    # Plot each snapshot with a color that transitions from red to green
     for j, idx in enumerate(snapshot_indices):
         radii = np.linalg.norm(positions[:, :, idx], axis=1)
         shell_masses = np.zeros(num_shells)
@@ -319,10 +291,9 @@ def plot_radial_density_over_time(solution, n, m, num_shells=5, num_snapshots=25
             shell_masses[i] = np.sum(in_shell) * m
         densities = shell_masses / shell_volumes
 
-        # Compute grayscale color: 0.0 is black, 1.0 is white.
-        # We scale the index so that the first snapshot is 0.0 (black) and the last is closer to white.
-        gray_value = j / (num_snapshots - 1)  # range from 0 to 1
-        color = (gray_value, gray_value, gray_value)
+        # Calculate the color: at t=0 it's red (1,0,0), at final snapshot it's green (0,1,0)
+        ratio = j / (num_snapshots - 1)
+        color = (1 - ratio, ratio, 0)
         ax.plot(shell_centers, densities, color=color, linewidth=2)
 
     plt.show()

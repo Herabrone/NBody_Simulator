@@ -8,12 +8,11 @@ utilizaing the Barnes-Hut algorithm to calculate the forces applied on each body
 
 import numpy as np
 from scipy.integrate import solve_ivp
-import click
 # Updated import for ForceCalculator
 from Logic.forces import ForceCalculator
 # Existing imports for Octree, Body, and insert_body remain
 from Logic.BarnesHut import OctreeNode, insert_body, Body
-from Visualization import print_results
+from UI.Visualization import print_results
 
 def equations_of_motion(t, y, masses, theta):
     '''
