@@ -252,48 +252,42 @@ def get_centre_mass(solution, m):
     return com
 
 def plot_radial_density_over_time(solution, n, m, num_shells=5, num_snapshots=25):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
 
-
-
-    """
-    Plot radial density profiles using 25 snapshots.
-    The snapshot at t=0 is drawn in red, and the colors interpolate smoothly to green for the final snapshot
-    """
     positions = solution.y[:3*n].reshape((n, 3, -1))
     times = solution.t
-
-    # Choose 25 equally spaced snapshot indices
     snapshot_indices = np.linspace(0, len(times) - 1, num_snapshots, dtype=int)
 
-    # Determine the global maximum radius among the chosen snapshots for consistent shell edges
-    max_radius_overall = 0.0
-    for idx in snapshot_indices:
-        radii = np.linalg.norm(positions[:, :, idx], axis=1)
-        max_radius_overall = max(max_radius_overall, np.max(radii))
-    
-    # Define shell edges, centers, and volumes
-    shell_edges = np.linspace(0, max_radius_overall, num_shells + 1)
-    shell_centers = 0.5 * (shell_edges[:-1] + shell_edges[1:])
-    shell_volumes = (4.0/3.0) * np.pi * (shell_edges[1:]**3 - shell_edges[:-1]**3)
+    # Determine global max radius
+    max_radius = max(np.max(np.linalg.norm(positions[:, :, idx], axis=1)) for idx in snapshot_indices)
 
-    # Create the plot
+    shell_edges = np.linspace(0, max_radius, num_shells + 1)
+    shell_centers = 0.5 * (shell_edges[:-1] + shell_edges[1:])
+    shell_volumes = (4/3) * np.pi * (shell_edges[1:]**3 - shell_edges[:-1]**3)
+
     fig, ax = plt.subplots()
     ax.set_title("Radial Density Profile Over Time")
     ax.set_xlabel("Radius (m)")
-    ax.set_ylabel("Density (kg/m^3)")
+    ax.set_ylabel("Density (kg/m³)")
+    ax.grid(True)
 
-    # Plot each snapshot with a color that transitions from red to green
     for j, idx in enumerate(snapshot_indices):
         radii = np.linalg.norm(positions[:, :, idx], axis=1)
-        shell_masses = np.zeros(num_shells)
-        for i, (r_min, r_max) in enumerate(zip(shell_edges[:-1], shell_edges[1:])):
-            in_shell = (radii >= r_min) & (radii < r_max)
-            shell_masses[i] = np.sum(in_shell) * m
+        shell_masses = np.array([
+            np.sum((radii >= r_min) & (radii < r_max)) * m
+            for r_min, r_max in zip(shell_edges[:-1], shell_edges[1:])
+        ])
         densities = shell_masses / shell_volumes
-
-        # Calculate the color: at t=0 it's red (1,0,0), at final snapshot it's green (0,1,0)
         ratio = j / (num_snapshots - 1)
         color = (1 - ratio, ratio, 0)
         ax.plot(shell_centers, densities, color=color, linewidth=2)
+
+    custom_lines = [
+        Line2D([0], [0], color=(1, 0, 0), lw=2),
+        Line2D([0], [0], color=(0, 1, 0), lw=2)
+    ]
+    ax.legend(custom_lines, ['t=0', 't=final'])
 
     plt.show()

@@ -6,7 +6,7 @@ import os
 # Add the parent directory to sys.path so that Logic can be found
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Import the run_simulation function from the Logic module
+# Import run_simulation from the Logic module
 from Logic.Simulation import run_simulation
 
 # Default values

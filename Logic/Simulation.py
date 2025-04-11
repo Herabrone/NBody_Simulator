@@ -57,7 +57,6 @@ def equations_of_motion(t, y, masses, theta):
     dydt = np.concatenate([velocities.flatten(), accelerations.flatten()])
     return dydt
 
-
 # Function to initialize bodies
 def initialize_bodies(n, R0, m):
     '''
@@ -87,7 +86,6 @@ def initialize_bodies(n, R0, m):
     #print(f"Initial total KE {KE}")
 
     return masses, positions, velocities
-
 
 def run_simulation(n, R0, timespan, theta, bound_condition):
     '''
