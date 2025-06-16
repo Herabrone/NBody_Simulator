@@ -2,8 +2,9 @@ import numpy as np
 from Logic.BarnesHut import OctreeNode
 
 class ForceCalculator:
-    def __init__(self, G=6.67430e-11):
+    def __init__(self, G=6.67430e-11, softening=1e9):
         self.G = G
+        self.softening = softening
 
     def compute_forces(self, node, body, theta):
         """
@@ -34,7 +35,10 @@ class ForceCalculator:
         else:
             r = other.position - body.position
             mass = other.mass
+
         distance = np.linalg.norm(r)
-        force = self.G * body.mass * mass / distance**2
+        softened_distance = np.sqrt(distance**2 + self.softening**2)
+
+        force = self.G * body.mass * mass / softened_distance**2
         # Update the body's acceleration (assuming acceleration is already initialized)
-        body.acceleration += (force / body.mass) * (r / distance)
+        body.acceleration += (force / body.mass) * (r / softened_distance)

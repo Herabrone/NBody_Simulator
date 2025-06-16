@@ -251,7 +251,7 @@ def get_centre_mass(solution, m):
     com = np.array([x_com, y_com, z_com])  # Center of mass at t=0
     return com
 
-def plot_radial_density_over_time(solution, n, m, num_shells=5, num_snapshots=25):
+def plot_radial_density_over_time(solution, n, m, num_shells=30, num_snapshots=25):
     import numpy as np
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
