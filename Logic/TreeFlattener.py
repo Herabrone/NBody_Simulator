@@ -33,3 +33,32 @@ def flatten_tree(node):
 
     recurse(node)
     return flat_nodes
+
+def flattened_nodes_to_numpy(flat_nodes):
+    # This method will convert the flattened tree into an SoA that will be passed to the 
+    # CUDA program for the force calculations
+    n = len(flat_nodes)
+
+    coms     = np.zeros((n, 3), dtype=np.float32)
+    masses   = np.zeros(n, dtype=np.float32)
+    sizes    = np.zeros(n, dtype=np.float32)
+    centers  = np.zeros((n, 3), dtype=np.float32)
+    is_leaf  = np.zeros(n, dtype=np.int32)
+    children = np.full((n, 8), -1, dtype=np.int32)
+
+    for i, node in enumerate(flat_nodes):
+        coms[i]     = node.center_of_mass
+        masses[i]   = node.total_mass
+        sizes[i]    = node.size
+        centers[i]  = node.center
+        is_leaf[i]  = int(node.is_leaf)
+        children[i] = node.child_indices
+
+    return {
+        "center_of_mass": coms,
+        "total_mass": masses,
+        "size": sizes,
+        "center": centers,
+        "is_leaf": is_leaf,
+        "children": children
+    }
