@@ -1,8 +1,7 @@
 // force_kernel.cu
 #include <math.h>
 
-extern "C" __global__
-void compute_forces(
+__global__ void compute_forces(
     const float3* body_pos,
     const float* body_mass,
     int num_bodies,
