@@ -7,10 +7,11 @@ sys.path.append(dll_path)
 
 import force_gpu
 
-n = 2  # number of bodies
-m = 1  # number of nodes
+n = 100000000  # number of bodies
+#Instant for up to 100 million bodies
+m = 1  # node
 
-# Dummy data
+# Dummy data :p
 body_pos = np.random.rand(n, 3).astype(np.float32)
 body_mass = np.ones(n, dtype=np.float32)
 node_com = np.random.rand(m, 3).astype(np.float32)
