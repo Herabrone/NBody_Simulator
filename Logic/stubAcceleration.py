@@ -1,5 +1,4 @@
 import sys
-import os
 import numpy as np
 
 dll_path = r"C:\Users\darja\Documents\ASTRO 3180\Project REPO\NBody_Simulator\build\Logic\GPU\Release"

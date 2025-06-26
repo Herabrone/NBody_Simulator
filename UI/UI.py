@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Import run_simulation from the Logic module
 from Logic.Simulation import run_simulation
+from Logic.Simulation import run_simulation_gpu
 
 # Default values
 DEFAULT_N = "50"
@@ -25,9 +26,14 @@ def run_gui_simulation():
         bound_condition = int(entry_bound_condition.get())
 
         # Run the simulation
+        # messagebox.showinfo("Success", "Simulation has started!")
+        # run_simulation(n, R0, timespan, theta, bound_condition)
+
+
+        # will run the GPU simulation
         messagebox.showinfo("Success", "Simulation has started!")
-        run_simulation(n, R0, timespan, theta, bound_condition)
-        
+        run_simulation_gpu(n, R0, timespan, theta, 1e3, bound_condition)
+
     except ValueError as e:
         messagebox.showerror("Error", "Please enter valid values.")
 
