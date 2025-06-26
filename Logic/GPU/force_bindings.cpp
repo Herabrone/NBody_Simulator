@@ -10,6 +10,12 @@ extern "C" void launch_cuda_force_kernel(
     float theta, float softening, float G
 );
 
+extern "C" void upload_tree(
+    float* node_com, float* node_mass, float* node_size,
+    float* node_center, int* node_is_leaf, int* node_children,
+    int num_nodes
+);
+
 // This is the declaration of the kernel from the .cu file
 void compute_forces(
     const float3*, const float*, int,
@@ -50,6 +56,23 @@ py::array_t<float> compute_gpu_acceleration(
     return accels;
 }
 
+void upload_tree_py(
+    py::array_t<float, py::array::c_style | py::array::forcecast> node_com,
+    py::array_t<float, py::array::c_style | py::array::forcecast> node_mass,
+    py::array_t<float, py::array::c_style | py::array::forcecast> node_size,
+    py::array_t<float, py::array::c_style | py::array::forcecast> node_center,
+    py::array_t<int, py::array::c_style | py::array::forcecast> node_is_leaf,
+    py::array_t<int, py::array::c_style | py::array::forcecast> node_children
+) {
+    int num_nodes = node_com.shape(0);
+    upload_tree(
+        (float*)node_com.data(), (float*)node_mass.data(), (float*)node_size.data(),
+        (float*)node_center.data(), (int*)node_is_leaf.data(), (int*)node_children.data(),
+        num_nodes
+    );
+}
+
 PYBIND11_MODULE(force_gpu, m) {
     m.def("compute_gpu_acceleration", &compute_gpu_acceleration, "Compute gravitational accelerations with CUDA");
+    m.def("upload_tree", &upload_tree_py, "Upload flattened tree data to GPU");
 }
